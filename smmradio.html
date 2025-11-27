@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SMM – Séries</title>
+
+<style>
+/* -------------------- GLOBAL -------------------- */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0d0d0d;
+    color: #fff;
+}
+
+/* -------------------- HEADER -------------------- */
+header {
+    padding: 40px 20px;
+    text-align: center;
+    background: #000;
+    border-bottom: 2px solid #f03;
+}
+
+#logo {
+    width: 500px;
+    max-width: 100%;
+    display: block;
+    margin: auto;
+}
+
+/* -------------------- LOGIN -------------------- */
+#login-area, #app {
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+}
+
+input {
+    padding: 12px;
+    width: 70%;
+    border-radius: 5px;
+    border: none;
+    background: #222;
+    color: #fff;
+    box-sizing: border-box; /* Para incluir padding na largura */
+}
+
+button {
+    padding: 12px 18px;
+    background: #f03;
+    border: none;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    min-width: 100px; /* Touch-friendly */
+}
+
+button:hover {
+    background: #ff3860;
+}
+
+/* -------------------- SERIES (LETTERBOXD STYLE) -------------------- */
+.serie-card {
+    background: #121212;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 12px;
+    display: flex;
+    gap: 20px;
+    border: 1px solid #1f1f1f;
+    transition: 0.2s;
+}
+
+.serie-card:hover {
+    transform: scale(1.02);
+    border-color: #f03;
+}
+
+.poster {
+    width: 160px;
+    border-radius: 12px;
+    flex-shrink: 0; /* Evita encolher */
+}
+
+.titulo {
+    font-size: 1.7em;
+    font-weight: bold;
+}
+
+.sinopse {
+    opacity: 0.8;
+    margin: 10px 0 20px;
+}
+
+/* -------------------- EPISODIOS -------------------- */
+.episodios-container {
+    margin-top: 10px;
+    padding-left: 5px;
+}
+
+.temp-titulo {
+    margin-top: 10px;
+    color: #f03;
+}
+
+.episodio {
+    background: #1b1b1b;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border: 1px solid #292929;
+}
+
+/* Notas */
+.stars {
+    font-size: 1.3em;
+    cursor: pointer;
+    color: #444;
+}
+
+.stars .active {
+    color: #ffdd33;
+}
+
+/* -------------------- RESPONSIVIDADE -------------------- */
+/* Tablets e menores */
+@media (max-width: 768px) {
+    header {
+        padding: 20px 10px;
+    }
+    
+    #logo {
+        width: 300px;
+    }
+    
+    #login-area, #app {
+        padding: 15px;
+        max-width: 100%;
+    }
+    
+    input {
+        width: 100%; /* Ocupa toda a largura */
+        margin-bottom: 10px;
+    }
+    
+    button {
+        width: 100%; /* Botão full-width */
+    }
+    
+    .serie-card {
+        flex-direction: column; /* Empilha imagem e texto */
+        gap: 15px;
+        padding: 10px;
+    }
+    
+    .poster {
+        width: 100%; /* Imagem ocupa toda a largura */
+        max-width: 200px;
+        align-self: center; /* Centraliza */
+    }
+    
+    .titulo {
+        font-size: 1.5em;
+    }
+    
+    .sinopse {
+        font-size: 0.9em;
+    }
+    
+    .episodio {
+        padding: 10px;
+    }
+    
+    .stars {
+        font-size: 1.2em;
+    }
+}
+
+/* Celulares pequenos */
+@media (max-width: 480px) {
+    header {
+        padding: 15px 5px;
+    }
+    
+    #logo {
+        width: 250px;
+    }
+    
+    #login-area, #app {
+        padding: 10px;
+    }
+    
+    .titulo {
+        font-size: 1.3em;
+    }
+    
+    .sinopse {
+        font-size: 0.8em;
+    }
+    
+    .temp-titulo {
+        font-size: 1.1em;
+    }
+    
+    .episodio {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+    
+    .stars {
+        font-size: 1.1em;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <!-- Substitua por uma URL válida de imagem ou remova se não tiver -->
+    <img id="logo" src="SMM RADIO (2).png">
+</header>
+
+<div id="login-area">
+    <h2>Bem-vindo ao SMM Séries</h2>
+    <p>Digite seu nome:</p>
+    <input id="username" placeholder="Seu nome">
+    <button onclick="login()">Entrar</button>
+</div>
+
+<div id="app" style="display:none;">
+    <h2 id="welcome"></h2>
+    <h3>Séries populares + Stranger Things</h3>
+    <div id="series"></div>
+</div>
+
+<script>
+////////////////////////////////////////////////////////////
+// DADOS ESTÁTICOS (SEM API)
+////////////////////////////////////////////////////////////
+
+// Dados de séries populares (simulados, baseados em conhecimento geral)
+const seriesData = [
+    {
+        id: 66732,
+        name: "Stranger Things",
+        overview: "Quando um garoto desaparece, uma cidade revela um mistério envolvendo experimentos secretos, forças sobrenaturais e uma menina estranha.",
+        poster_path: "/49WJfeN0moxb9IPfGn8AIqMGskD.jpg",  // URL de exemplo do TMDB
+        number_of_seasons: 4
+    },
+    {
+        id: 1399,
+        name: "Game of Thrones",
+        overview: "Nove famílias nobres lutam pelo controle dos sete reinos de Westeros, enquanto um antigo inimigo retorna após séculos de exílio.",
+        poster_path: "/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg",
+        number_of_seasons: 8
+    },
+    {
+        id: 1416,
+        name: "Breaking Bad",
+        overview: "Um professor de química com câncer terminal se une a um ex-aluno para produzir e vender metanfetamina para garantir o futuro de sua família.",
+        poster_path: "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
+        number_of_seasons: 5
+    },
+    {
+        id: 84958,
+        name: "Loki",
+        overview: "O deus da trapaça Loki retoma seu papel como o vilão eterno em uma nova série que ocorre após os eventos de Avengers: Endgame.",
+        poster_path: "/kEl2t3OhXc3Zb9FBh1AuYzRTgZp.jpg",
+        number_of_seasons: 2
+    },
+    {
+        id: 76479,
+        name: "The Boys",
+        overview: "Em um mundo onde super-heróis são corrompidos pelo poder, um grupo de vigilantes decide combater o mal de forma violenta.",
+        poster_path: "/stTEycfAk3XphC8HTfeUhxnCc4I.jpg",
+        number_of_seasons: 4
+    }
+];
+
+////////////////////////////////////////////////////////////
+// LOGIN
+////////////////////////////////////////////////////////////
+function login() {
+    const name = document.getElementById("username").value.trim();
+    if (!name) return alert("Digite seu nome!");
+
+    localStorage.setItem("SMM_user", name);
+    carregarApp();
+}
+
+function carregarApp() {
+    const user = localStorage.getItem("SMM_user");
+    if (!user) return;
+
+    document.getElementById("login-area").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    document.getElementById("welcome").innerText = `Olá, ${user}!`;
+
+    carregarSeries();
+}
+
+window.onload = carregarApp;
+
+////////////////////////////////////////////////////////////
+// CARREGAR SÉRIES (USANDO DADOS ESTÁTICOS)
+////////////////////////////////////////////////////////////
+function carregarSeries() {
+    const container = document.getElementById("series");
+
+    // Renderizar todas as séries do array
+    seriesData.forEach(serie => {
+        renderSerie(serie, container);
+    });
+}
+
+////////////////////////////////////////////////////////////
+// RENDER DE SÉRIE
+////////////////////////////////////////////////////////////
+function renderSerie(serie, container) {
+    const card = document.createElement("div");
+    card.className = "serie-card";
+
+    card.innerHTML = `
+        <img class="poster" src="https://image.tmdb.org/t/p/w300${serie.poster_path}" onerror="this.src='https://via.placeholder.com/160x240?text=Sem+Imagem'">
+        <div>
+            <div class="titulo">${serie.name}</div>
+            <div class="sinopse">${serie.overview}</div>
+            <button onclick="abrirEpisodios(${serie.id}, this)">Ver episódios</button>
+            <div class="episodios-container"></div>
+        </div>
+    `;
+
+    container.appendChild(card);
+}
+
+////////////////////////////////////////////////////////////
+// EPISÓDIOS (DADOS FICTÍCIOS BASEADOS NO ID)
+////////////////////////////////////////////////////////////
+function abrirEpisodios(id, btn) {
+    const container = btn.nextElementSibling;
+
+    // Expandir/recolher
+    if (container.innerHTML.trim() !== "") {
+        container.innerHTML = "";
+        btn.innerText = "Ver episódios";
+        return;
+    }
+
+    btn.innerText = "Carregando...";
+
+    // Encontrar a série pelo ID
+    const serie = seriesData.find(s => s.id === id);
+    if (!serie) {
+        alert("Série não encontrada.");
+        btn.innerText = "Ver episódios";
+        return;
+    }
+
+    // Simular episódios por temporada (dados fictícios)
+    for (let temp = 1; temp <= serie.number_of_seasons; temp++) {
+        const t = document.createElement("h3");
+        t.className = "temp-titulo";
+        t.innerText = `Temporada ${temp}`;
+        container.appendChild(t);
+
+        // Gerar episódios fictícios (ex.: 10 episódios por temporada)
+        for (let epNum = 1; epNum <= 10; epNum++) {
+            const bloco = document.createElement("div");
+            bloco.className = "episodio";
+
+            const nota = pegarNota(id, temp, epNum);
+
+            bloco.innerHTML = `
+                <strong>${epNum}. Episódio ${epNum} - ${serie.name} T${temp}</strong><br>
+                <small>Sinopse fictícia do episódio ${epNum} da temporada ${temp}. Aqui vai uma breve descrição do que acontece neste capítulo.</small><br><br>
+
+                <div class="stars" data-id="${id}" data-temp="${temp}" data-ep="${epNum}">
+                    ${renderStars(nota)}
+                </div>
+            `;
+
+            container.appendChild(bloco);
+        }
+    }
+
+    btn.innerText = "Fechar episódios";
+}
+
+////////////////////////////////////////////////////////////
+// NOTAS EM ESTRELAS (LETTERBOXD STYLE)
+////////////////////////////////////////////////////////////
+function renderStars(nota) {
+    let html = "";
+    for (let i = 1; i <= 5; i++) {
+        html += `<span class="star ${i <= nota ? "active" : ""}" onclick="avaliarStar(this, ${i})">★</span>`;
+    }
+    return html;
+}
+
+function avaliarStar(el, nota) {
+    const box = el.parentElement;
+
+    const id = box.dataset.id;
+    const temp = box.dataset.temp;
+    const ep = box.dataset.ep;
+
+    salvarNota(id, temp, ep, nota);
+
+    box.innerHTML = renderStars(nota);
+}
+
+////////////////////////////////////////////////////////////
+// STORAGE
+////////////////////////////////////////////////////////////
+function salvarNota(id, temp, ep, nota) {
+    const user = localStorage.getItem("SMM_user");
+    const chave = `SMM_rating_${user}`;
+
+    let banco = JSON.parse(localStorage.getItem(chave)) || {};
+
+    if (!banco[id]) banco[id] = {};
+    if (!banco[id][temp]) banco[id][temp] = {};
+
+    banco[id][temp][ep] = nota;
+
+    localStorage.setItem(chave, JSON.stringify(banco));
+}
+
+function pegarNota(id, temp, ep) {
+    const user = localStorage.getItem("SMM_user");
+    const chave = `SMM_rating_${user}`;
+    const banco = JSON.parse(localStorage.getItem(chave)) || {};
+
+    return banco[id]?.[temp]?.[ep] || 0;
+}
+</script>
+
+</body>
+</html>
